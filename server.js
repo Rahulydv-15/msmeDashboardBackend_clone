@@ -29,9 +29,9 @@ const dbMiddleware = (req, res, next) => {
         next();
     });
 };
-// app.get('/',(req,res,next) =>{
-//     res.send("Hello World");
-// });
+app.get('/',(req,res,next) =>{
+    res.send("Hello World");
+});
 // Defining a GET endpoint to fetch data from the database
 app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
     const startDate = req.body.startDate;
