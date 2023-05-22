@@ -12,10 +12,10 @@ app.use(bodyParser.json());
 // Creating a connection pool to MySQL database
 const pool = mysql.createPool({
     connectionLimit: 10,
-    host: 'localhost',
-    user: 'Rahul',
-    password: 'Rahul@123',
-    database: 'msme_events'
+    host: 'bi76kwt0m15xvzxiy4th-mysql.services.clever-cloud.com',
+    user: 'uubuzvmiaeil7qh8',
+    password: '54zz7lcjZzCxV4lPZdvR',
+    database: 'bi76kwt0m15xvzxiy4th'
 });
 
 // Defining a middleware function to handle database connection
@@ -30,7 +30,7 @@ const dbMiddleware = (req, res, next) => {
     });
 };
 app.get('/',(req,res,next) =>{
-    res.send("Hello World");
+   res.send("Hello World");
 });
 // Defining a GET endpoint to fetch data from the database
 app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
