@@ -110,7 +110,7 @@ app.post('/api/vahana',authorizeMiddleware,dbMiddleware, (req,res,next)=>{
             statusCode: 200,
             message: 'Success',
             data: {
-                totalCount: totalCount
+                totalCount: 1
             }
         };
         res.status(200).json(successResponse);
