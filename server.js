@@ -106,6 +106,7 @@ app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
 });
 
 app.post('/api/vahana', authorizeMiddleware, dbMiddleware, (req, res, next) => {
+    console.log(req.body.tempObject.DMI);
     const PAN = req.body.tempObject.DMI.application.pan;
     const tempObject=req.body.tempObject;
     const sqlSelect = "SELECT * FROM vahana WHERE tempObject LIKE CONCAT('%', ?, '%')";
