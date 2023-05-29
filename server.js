@@ -29,8 +29,8 @@ const dbMiddleware = (req, res, next) => {
         next();
     });
 };
-app.get('/',(req,res,next) =>{
-   res.send("Hello World");
+app.get('/', (req, res, next) => {
+    res.send("Hello World");
 });
 // Defining a GET endpoint to fetch data from the database
 app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
@@ -38,11 +38,11 @@ app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
     const startTime = req.body.startTime;
     const endDate = req.body.endDate;
     const endTime = req.body.endTime;
-    const requestType=req.body.requestType;
+    const requestType = req.body.requestType;
     // console.log(req.body);
     // Check for missing or incorrect request body variables
     // request 01 for all count and 02 for unique count
-    if (!startDate || !startTime || !endDate || !endTime || !requestType || (requestType!='01' && requestType!='02')) {
+    if (!startDate || !startTime || !endDate || !endTime || !requestType || (requestType != '01' && requestType != '02')) {
         const errorResponse = {
             statusCode: 400,
             message: 'Bad Request'
@@ -74,9 +74,9 @@ app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
 
     let sql = `SELECT COUNT(*) AS totalCount FROM events_tracking WHERE time_stamp >= DATE_FORMAT('${startDate} ${startTime}:00', '%Y-%m-%d %H:%i:%s') AND time_stamp <= DATE_FORMAT('${endDate} ${endTime}:00', '%Y-%m-%d %H:%i:%s') And (event_name="LDS E-Sign Verified" And remark_2="true")`;
 
-    if(requestType==='02'){
+    if (requestType === '02') {
         console.log("Enter");
-        sql=`SELECT COUNT(DISTINCT mobile) AS totalCount FROM events_tracking WHERE time_stamp >= DATE_FORMAT('${startDate} ${startTime}:00', '%Y-%m-%d %H:%i:%s') AND time_stamp <= DATE_FORMAT('${endDate} ${endTime}:00', '%Y-%m-%d %H:%i:%s') And (event_name="LDS E-Sign Verified" And remark_2="true")`;
+        sql = `SELECT COUNT(DISTINCT mobile) AS totalCount FROM events_tracking WHERE time_stamp >= DATE_FORMAT('${startDate} ${startTime}:00', '%Y-%m-%d %H:%i:%s') AND time_stamp <= DATE_FORMAT('${endDate} ${endTime}:00', '%Y-%m-%d %H:%i:%s') And (event_name="LDS E-Sign Verified" And remark_2="true")`;
     }
     req.db.query(sql, (err, result) => {
         if (err) {
@@ -105,29 +105,81 @@ app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
     });
 });
 
-app.post('/api/vahana',authorizeMiddleware,dbMiddleware, (req,res,next)=>{
-    console.log(req.body.tempObject);
-    const successResponse = {
-            statusCode: 200,
-            message: 'Success',
-            data: {
-                totalCount: 1
-            }
-        };
-        res.status(200).json(successResponse);
+app.post('/api/vahana', authorizeMiddleware, dbMiddleware, (req, res, next) => {
+    const PAN = req.body.tempObject.DMI.application.pan;
+    const tempObject=req.body.tempObject;
+    const sqlSelect = "SELECT * FROM vahana WHERE tempObject LIKE CONCAT('%', ?, '%')";
+
+    req.db.query(sqlSelect, [PAN], (error, results) => {
+        if (error) {
+            // Handle the error
+            console.error(error);
+            res.status(500).json({
+                status: "error",
+                message: "An error occurred while executing the query.",
+            });
+            return;
+        }
+
+        if (results.length === 0) {
+            // No record found, create a new entry
+            const sqlInsert = "INSERT INTO vahana (tempObject) VALUES (?)";
+            req.db.query(sqlInsert, [tempObject], (insertError, insertResults) => {
+                if (insertError) {
+                    // Handle the error
+                    console.error(insertError);
+                    res.status(500).json({
+                        status: "error",
+                        message: "An error occurred while creating a new entry.",
+                    });
+                    return;
+                }
+
+                // New entry created with insertResults.insertId
+                res.status(200).json({
+                    status: "success",
+                    message: "New entry created.",
+                    insertedId: insertResults.insertId,
+                });
+            });
+        } else {
+            // Record found, update the existing entry
+            const recordId = results[0].id;
+            const sqlUpdate = "UPDATE vahana SET tempObject = ? WHERE id = ?";
+            req.db.query(sqlUpdate, [tempObject, recordId], (updateError, updateResults) => {
+                if (updateError) {
+                    // Handle the error
+                    console.error(updateError);
+                    res.status(500).json({
+                        status: "error",
+                        message: "An error occurred while updating the existing entry.",
+                    });
+                    return;
+                }
+
+                // Existing entry updated with recordId
+                res.status(200).json({
+                    status: "success",
+                    message: "Existing entry updated.",
+                    updatedId: recordId,
+                });
+            });
+        }
+    });
+
 });
 
 // Middleware to check authorization header
 function authorizeMiddleware(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader || authHeader !== 'Bearer my-token') {
-    const errorResponse = {
-      statusCode: 401,
-      message: 'Unauthorized'
-    };
-    return res.status(401).json(errorResponse);
-  }
-  next();
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || authHeader !== 'Bearer my-token') {
+        const errorResponse = {
+            statusCode: 401,
+            message: 'Unauthorized'
+        };
+        return res.status(401).json(errorResponse);
+    }
+    next();
 }
 
 
