@@ -106,7 +106,14 @@ app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
 });
 
 app.post('/api/vahana',authorizeMiddleware,dbMiddleware, (req,res,next)=>{
-    res.send("Done");
+    const successResponse = {
+            statusCode: 200,
+            message: 'Success',
+            data: {
+                totalCount: totalCount
+            }
+        };
+        res.status(200).json(successResponse);
 });
 
 // Middleware to check authorization header
