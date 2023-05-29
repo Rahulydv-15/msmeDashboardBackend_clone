@@ -106,6 +106,7 @@ app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
 });
 
 app.post('/api/vahana',authorizeMiddleware,dbMiddleware, (req,res,next)=>{
+    console.log(req.body.tempObject);
     const successResponse = {
             statusCode: 200,
             message: 'Success',
