@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 // Creating a connection pool to MySQL database
 const pool = mysql.createPool({
     connectionLimit: 10,
@@ -106,7 +107,6 @@ app.post('/', authorizeMiddleware, dbMiddleware, (req, res, next) => {
 });
 
 app.post('/api/vahana', authorizeMiddleware, dbMiddleware, (req, res, next) => {
-    console.log(req.body.tempObject);
     const PAN = req.body.tempObject.DMI.application.pan;
     const tempObject=req.body.tempObject;
     const sqlSelect = "SELECT * FROM vahana WHERE tempObject LIKE CONCAT('%', ?, '%')";
